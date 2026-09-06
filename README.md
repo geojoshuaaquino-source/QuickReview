@@ -1,39 +1,86 @@
 # QuickReview
 
-A local-first mobile flashcard and study application inspired by Anki, focused on a simpler interface, flexible card types, and broad document/text handling.
+A local-first native mobile flashcard/study app inspired by Anki, but designed around a cleaner, lower-friction study experience and stronger document/text handling.
+
+## Architecture
+
+QuickReview is being built as a layered application:
+
+`Presentation → Application → Domain → Data`
+
+- **Domain:** cards, decks, card types, sessions, reviews, documents, settings.
+- **Application:** deck/card/session use cases and optional scheduling boundary.
+- **Data:** repository interface with local persistence behind it.
+- **Presentation:** screens, reusable components, design tokens, and interaction states.
+
+The UI is no longer the data layer. The monolithic prototype has been split so future features can be added without rewriting unrelated screens.
+
+The project uses React Native + TypeScript. Current Expo releases use React Native's New Architecture, so the project is being kept compatible with that direction. citeturn0search0
+
+## Phase status
+
+### Phase 1 — Architecture + UI
+**Substantially complete.**
+
+Implemented:
+- Layered project structure.
+- Domain models for cards, decks, sessions, reviews and documents.
+- Repository boundary.
+- Central design tokens.
+- Reusable presentation components.
+- Home, Decks, Study, Library and Settings destinations.
+- Polished mobile visual system.
+
+### Phase 2 — Core Flashcards
+**In progress.**
+
+Implemented:
+- Basic Q&A cards.
+- Deck creation.
+- Manual card creation.
+- Deck selection.
+- Search.
+- Study/reveal flow.
+- Session progression.
+- Local persistence.
+- Suspended-card-aware basic study selection.
+
+Still to implement in Phase 2:
+- Full card browser/editor.
+- Tags and filtering.
+- Move cards between decks.
+- Duplicate detection.
+- Suspend/unsuspend controls.
+- Session configuration and preview.
+- Proper review history/statistics.
+
+### Phase 3 — Advanced Card Types
+Next after the Phase 2 core is stable:
+- Reversed
+- Cloze
+- Multiple choice
+- True/false
+- Typed answer
+- Image cards
+- Image occlusion
+
+### Phase 4 — Documents/Text
+PDF, DOCX, PPTX, EPUB, TXT, CSV/TSV, images, OCR fallback, structure reconstruction, normalization, verification UI and structured-text import.
+
+### Phase 5 — Optional Scheduling
+Spaced repetition is a separate layer. It will not be required for normal studying. FSRS can be introduced behind the scheduler boundary without changing the basic card/session model.
+
+### Phase 6 — Import/Export + Polish
+Native format, Anki-compatible import/export where practical, media handling, richer statistics, performance and accessibility refinement.
+
+Backup/cloud sync remain later infrastructure rather than blockers for the core app.
 
 ## Product principles
 
 - No AI dependency for core functionality.
-- Spaced repetition is optional, not required.
-- Study quickly with minimal friction.
-- Keep advanced functionality available without making the basic UI complicated.
-- Preserve source documents when extracting text so users can verify extraction.
-- Use modular architecture for card types, document parsers, OCR, import/export, and scheduling.
-
-## Phase 1 status
-
-Phase 1 establishes the application architecture and visual/UI foundation before implementing the complete study engine.
-
-Current foundation:
-- React Native + TypeScript mobile project structure.
-- Navigation-ready screen architecture.
-- Central design tokens.
-- Main dashboard, decks, study, library/import, and settings screen placeholders.
-- Reusable UI primitives intended for later feature implementation.
-
-## Planned card/content formats
-
-Basic Q&A, reversed, cloze, multiple choice, true/false, typed answer, image-based, and image occlusion.
-
-## Document pipeline
-
-`File -> format-specific parser -> structure/layout reconstruction -> OCR fallback when needed -> normalization -> internal document model`
-
-## Structured text
-
-QuickReview will support simple human-readable structured text for importing study material. Fields can include Term, Definition, Question, Answer, Example, Category/Topic, Notes, and enumeration/list content when present. Enumeration is optional; examples are optional and may be multiple when the source calls for them.
-
-## Non-priority for the initial build
-
-Backup, cloud sync, and other infrastructure-heavy features are intentionally deferred.
+- No cloud dependency for studying.
+- Spaced repetition is optional.
+- Advanced features should not clutter the basic experience.
+- Source documents remain available for extraction verification.
+- Prefer modular boundaries over a giant screen/component.
+- Build the actual product, not just a UI mockup.
