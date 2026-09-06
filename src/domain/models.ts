@@ -1,0 +1,11 @@
+export type CardType = 'basic' | 'reversed' | 'cloze' | 'multipleChoice' | 'trueFalse' | 'typedAnswer' | 'image' | 'imageOcclusion';
+export type Rating = 'again' | 'hard' | 'good' | 'easy';
+export type Card = { id:string; deckId:string; type:CardType; front:string; back:string; examples:string[]; tags:string[]; createdAt:string; updatedAt:string; suspended:boolean };
+export type Deck = { id:string; name:string; subject:string; accent:string; createdAt:string; updatedAt:string; cards:Card[] };
+export type ReviewRecord = { id:string; cardId:string; sessionId:string; rating:Rating; elapsedMs:number; createdAt:string };
+export type StudySession = { id:string; deckId:string; cardIds:string[]; currentIndex:number; startedAt:string; completedAt?:string; schedulingEnabled:boolean };
+export type DocumentBlock = { id:string; type:'heading'|'paragraph'|'list'|'table'|'image'|'pageBreak'; text?:string; items?:string[]; page?:number };
+export type Document = { id:string; name:string; mimeType:string; sourceUri:string; blocks:DocumentBlock[]; extractedAt:string; verified:boolean };
+export type AppSettings = { schedulingEnabled:boolean; defaultSessionSize:number; theme:'system'|'light'|'dark'; gesturesEnabled:boolean };
+export const now=()=>new Date().toISOString();
+export const makeId=(prefix:string)=>`${prefix}_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
