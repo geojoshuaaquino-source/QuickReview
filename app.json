@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "QuickReview",
+    "slug": "quickreview",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "android": {
+      "package": "com.geojoshuaaquino.quickreview",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#F5F2ED"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.geojoshuaaquino.quickreview"
+    },
+    "platforms": ["android", "ios"],
+    "githubUrl": "https://github.com/geojoshuaaquino-source/QuickReview"
+  }
+}
