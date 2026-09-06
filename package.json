@@ -1,7 +1,24 @@
 {
-  "name":"quickreview","version":"0.1.0","private":true,
-  "main":"node_modules/expo/AppEntry.js",
-  "scripts":{"start":"expo start","android":"expo run:android","ios":"expo run:ios","typecheck":"tsc --noEmit"},
-  "dependencies":{"expo":"latest","expo-status-bar":"latest","react":"latest","react-native":"latest","react-native-safe-area-context":"latest","@react-navigation/native":"latest","@react-navigation/native-stack":"latest","@react-navigation/bottom-tabs":"latest","@react-native-async-storage/async-storage":"latest"},
-  "devDependencies":{"@types/react":"latest","@types/react-native":"latest","typescript":"latest"}
+  "name": "quickreview",
+  "version": "0.1.0",
+  "private": true,
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "expo": "latest",
+    "expo-status-bar": "latest",
+    "react": "latest",
+    "react-native": "latest",
+    "react-native-safe-area-context": "latest",
+    "@react-native-async-storage/async-storage": "latest"
+  },
+  "devDependencies": {
+    "@types/react": "latest",
+    "typescript": "latest"
+  }
 }
