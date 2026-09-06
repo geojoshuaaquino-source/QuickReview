@@ -10,13 +10,12 @@
       "package": "com.geojoshuaaquino.quickreview",
       "versionCode": 1,
       "adaptiveIcon": {
-        "backgroundColor": "#F5F2ED"
+        "backgroundColor": "#F4F2EE"
       }
     },
     "ios": {
       "bundleIdentifier": "com.geojoshuaaquino.quickreview"
     },
-    "platforms": ["android", "ios"],
-    "githubUrl": "https://github.com/geojoshuaaquino-source/QuickReview"
+    "platforms": ["android", "ios"]
   }
 }
