@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Card, Deck, Rating } from '../domain/models';
+import { Card, Deck, Rating, StudySession, makeId, now } from '../domain/models';
 import { QuickReviewRepository } from '../data/QuickReviewRepository';
 import { QuickReviewService } from './QuickReviewService';
 
@@ -9,8 +9,7 @@ export function useQuickReview(repo: QuickReviewRepository) {
   const [loaded, setLoaded] = useState(false);
 
   const refresh = useCallback(async () => {
-    const next = await service.listDecks();
-    setDecks(next);
+    setDecks(await service.listDecks());
     setLoaded(true);
   }, [service]);
 
@@ -27,9 +26,7 @@ export function useQuickReview(repo: QuickReviewRepository) {
     const duplicate = existing.some(c => c.front.trim().toLowerCase() === front.trim().toLowerCase() && c.back.trim().toLowerCase() === back.trim().toLowerCase());
     if (duplicate) throw new Error('A card with the same front and back already exists in this deck.');
     const card = await service.createCard(deckId, front, back, type);
-    if (tags.length) {
-      await repo.updateCard({ ...card, tags, updatedAt: new Date().toISOString() });
-    }
+    if (tags.length) await repo.updateCard({ ...card, tags, updatedAt: now() });
     await refresh();
     return card;
   }, [decks, repo, refresh, service]);
@@ -37,7 +34,8 @@ export function useQuickReview(repo: QuickReviewRepository) {
   const updateCard = useCallback(async (card: Card) => { await repo.updateCard(card); await refresh(); }, [repo, refresh]);
   const deleteCard = useCallback(async (cardId: string) => { await repo.deleteCard(cardId); await refresh(); }, [repo, refresh]);
   const toggleSuspend = useCallback(async (cardId: string) => { await repo.toggleSuspend(cardId); await refresh(); }, [repo, refresh]);
-  const grade = useCallback(async (sessionId: string, cardId: string, rating: Rating, elapsedMs: number) => { await service.gradeBySession(sessionId, cardId, rating, elapsedMs); }, [service]);
+  const grade = useCallback(async (session: StudySession, cardId: string, rating: Rating, elapsedMs: number) => { await service.grade(session, cardId, rating, elapsedMs); }, [service]);
+  const makeSession = useCallback(async (deck: Deck, size: number, mode: 'sequential' | 'random' = 'sequential') => service.startSession(deck, size, mode), [service]);
 
-  return { decks, loaded, refresh, createDeck, createCard, updateCard, deleteCard, toggleSuspend, grade };
+  return { decks, loaded, refresh, createDeck, createCard, updateCard, deleteCard, toggleSuspend, grade, makeSession };
 }
