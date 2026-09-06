@@ -15,8 +15,6 @@ QuickReview is being built as a layered application:
 
 The UI is no longer the data layer. The monolithic prototype has been split so future features can be added without rewriting unrelated screens.
 
-The project uses React Native + TypeScript. Current Expo releases use React Native's New Architecture, so the project is being kept compatible with that direction. citeturn0search0
-
 ## Phase status
 
 ### Phase 1 — Architecture + UI
