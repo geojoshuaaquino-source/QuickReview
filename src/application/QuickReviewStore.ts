@@ -18,9 +18,10 @@ export function useQuickReview(repo: QuickReviewRepository) {
     const existing = decks.find(d => d.id === deckId)?.cards ?? [];
     const normalizedFront = front.trim().toLowerCase(); const normalizedBack = back.trim().toLowerCase();
     if (existing.some(c => c.front.trim().toLowerCase() === normalizedFront && c.back.trim().toLowerCase() === normalizedBack)) throw new Error('A card with the same front and back already exists in this deck.');
-    const card = await service.createCard(deckId, front, back, type, tags);
+    const card = await service.createCard(deckId, front, back, type);
+    if (tags.length) await repo.updateCard({ ...card, tags, updatedAt: now() });
     await refresh(); return card;
-  }, [decks, refresh, service]);
+  }, [decks, refresh, repo, service]);
 
   const updateCard = useCallback(async (card: Card) => { await repo.updateCard(card); await refresh(); }, [repo, refresh]);
   const deleteCard = useCallback(async (cardId: string) => { await repo.deleteCard(cardId); await refresh(); }, [repo, refresh]);
