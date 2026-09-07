@@ -29,13 +29,13 @@ export class QuickReviewService {
   const ids=source.slice(0,size).map(c=>c.id);
   return{id:makeId('session'),deckId:deck.id,cardIds:ids,currentIndex:0,startedAt:now(),schedulingEnabled};
  }
- async grade(session:StudySession,cardId:string,rating:Rating,elapsedMs:number){
+ async grade(session:StudySession,cardId:string,rating:Rating,elapsedMs:number):Promise<ReviewRecord>{
   const record:ReviewRecord={id:makeId('review'),cardId,sessionId:session.id,rating,elapsedMs,createdAt:now()};
   await this.repo.recordReview(record);
-  if(!session.schedulingEnabled)return;
+  if(!session.schedulingEnabled)return record;
   const decks=await this.repo.getDecks();
   const deck=decks.find(d=>d.id===session.deckId); const card=deck?.cards.find(c=>c.id===cardId);
-  if(!card)return;
+  if(!card)return record;
   const previous=Math.max(0,card.intervalDays ?? 0);
   const ease=card.ease ?? 2.5;
   let intervalDays=previous;
@@ -46,5 +46,6 @@ export class QuickReviewService {
   else if(rating==='good'){intervalDays=previous?Math.max(1,Math.round(previous*ease)):1;dueAt=new Date(Date.now()+intervalDays*DAY_MS).toISOString();}
   else {intervalDays=previous?Math.max(1,Math.round(previous*(ease+0.5))):4;dueAt=new Date(Date.now()+intervalDays*DAY_MS).toISOString();nextEase=Math.min(3.2,ease+0.15);}
   await this.repo.updateCard({...card,intervalDays,ease:nextEase,dueAt,updatedAt:now()});
+  return record;
  }
 }
