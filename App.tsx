@@ -16,7 +16,7 @@ const repo=new LocalRepository();
 export default function App(){
  const [tab,setTab]=useState<Tab>('Home');
  const [selectedId,setSelectedId]=useState('biology');
- const {decks,reviews,settings,loaded,createCard,updateCard,grade,makeSession,refresh,deleteCard,toggleSuspend,saveSettings}=useQuickReview(repo);
+ const {decks,reviews,settings,loaded,createCard,updateCard,grade,makeSession,refresh,deleteCard,toggleSuspend,saveSettings,importCards,createDeckAndImport}=useQuickReview(repo);
  const selected=useMemo(()=>decks.find(d=>d.id===selectedId)||decks[0],[decks,selectedId]);
  const nav={go:setTab,select:setSelectedId};
  const addCard=async(card:Card)=>{await createCard(card.deckId,card.front,card.back,card.type,card.tags)};
@@ -26,7 +26,7 @@ export default function App(){
  if(tab==='Home')screen=<HomeScreen decks={decks} reviews={reviews} schedulingEnabled={settings.schedulingEnabled} onStudy={id=>{setSelectedId(id);setTab('Study')}} onDecks={()=>setTab('Decks')} onLibrary={()=>setTab('Library')}/>;
  else if(tab==='Decks')screen=<Decks decks={decks} setDecks={legacySetDecks} nav={nav}/>;
  else if(tab==='Study'&&selected)screen=<StudyScreen deck={selected} defaultSessionSize={settings.defaultSessionSize} onAdd={addCard} onStartSession={makeSession} onGrade={grade}/>;
- else if(tab==='Library')screen=<LibraryScreen decks={decks} onToggleSuspend={toggleSuspend} onDelete={deleteCard} onUpdate={updateCard}/>;
+ else if(tab==='Library')screen=<LibraryScreen decks={decks} onToggleSuspend={toggleSuspend} onDelete={deleteCard} onUpdate={updateCard} onImportCards={importCards} onCreateDeckAndImport={createDeckAndImport}/>;
  else screen=<SettingsScreen settings={settings} onChange={saveSettings}/>;
  return <SafeAreaView style={s.safe}><StatusBar barStyle="dark-content" backgroundColor={T.colors.bg}/><View style={s.app}>{screen}</View><View style={s.nav}>{(['Home','Decks','Study','Library','Settings'] as Tab[]).map(x=>{const active=x===tab;return <Pressable key={x} onPress={()=>setTab(x)} accessibilityRole="tab" accessibilityState={{selected:active}} style={s.navItem}><View style={[s.navIcon,active&&s.navIconActive]}><Text style={[s.navGlyph,active&&s.navActive]}>{({Home:'⌂',Decks:'▤',Study:'◆',Library:'□',Settings:'⚙'} as Record<Tab,string>)[x]}</Text></View><Text style={[s.navLabel,active&&s.navActive]}>{x}</Text></Pressable>})}</View></SafeAreaView>;
 }
