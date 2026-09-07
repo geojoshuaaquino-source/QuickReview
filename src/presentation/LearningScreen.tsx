@@ -107,7 +107,7 @@ const s = StyleSheet.create({
   cardArea: { flex: 1, borderWidth: 1, borderColor: T.colors.line, backgroundColor: T.colors.surface },
   lesson: { padding: 20, paddingBottom: 28 },
   type: { fontSize: 8, fontWeight: '900', letterSpacing: 1.3, color: T.colors.faint, marginBottom: 20 },
-  prompt: { fontSize: 25, lineHeight: 33, fontWeight: '850', color: T.colors.ink },
+  prompt: { fontSize: 25, lineHeight: 33, fontWeight: '900', color: T.colors.ink },
   divider: { height: 1, backgroundColor: T.colors.line, marginVertical: 24 },
   section: { fontSize: 8, fontWeight: '900', letterSpacing: 1.4, color: T.colors.faint, marginBottom: 8, marginTop: 4 },
   meaning: { fontSize: 16, lineHeight: 25, color: T.colors.ink },
