@@ -27,49 +27,75 @@ Implemented:
 - Central design tokens.
 - Reusable presentation components.
 - Home, Decks, Study, Library and Settings destinations.
-- Polished mobile visual system.
+- Clean modern academic visual system.
+- Safe-area-aware app shell.
 
 ### Phase 2 — Core Flashcards
-**In progress.**
+**Core implementation complete; refinement continues.**
 
 Implemented:
 - Basic Q&A cards.
-- Deck creation.
+- Deck creation and deck selection.
 - Manual card creation.
-- Deck selection.
 - Search.
-- Study/reveal flow.
-- Session progression.
+- Study/reveal flow and session progression.
 - Local persistence.
-- Suspended-card-aware basic study selection.
-
-Still to implement in Phase 2:
-- Full card browser/editor.
+- Suspended-card-aware study selection.
+- Card browser with detail view.
+- Card editing and deletion.
 - Tags and filtering.
-- Move cards between decks.
-- Duplicate detection.
 - Suspend/unsuspend controls.
-- Session configuration and preview.
-- Proper review history/statistics.
+- Duplicate detection.
+- Sequential or shuffled sessions.
+- Review records and statistics foundation.
 
 ### Phase 3 — Advanced Card Types
-Next after the Phase 2 core is stable:
-- Reversed
-- Cloze
-- Multiple choice
-- True/false
-- Typed answer
-- Image cards
-- Image occlusion
+**Core study interactions implemented.**
+
+Implemented:
+- Reversed cards.
+- Cloze cards using `{{hidden answer}}` syntax.
+- Multiple choice with stored correct option.
+- True/false cards.
+- Typed-answer cards with normalized answer checking.
+- Image cards with local image selection.
+- Image-occlusion card storage and image presentation foundation.
+
+Remaining refinement:
+- True image-occlusion region/mask editor.
+- Richer advanced-card editing from Library.
+- Better per-type authoring guidance and validation.
 
 ### Phase 4 — Documents/Text
-PDF, DOCX, PPTX, EPUB, TXT, CSV/TSV, images, OCR fallback, structure reconstruction, normalization, verification UI and structured-text import.
+**In progress.**
+
+Implemented:
+- TXT and CSV card import.
+- DOCX, PPTX and EPUB text extraction using local archive parsing.
+- Import preview and destination-deck selection.
+- Duplicate-safe card insertion.
+
+Planned:
+- PDF text extraction.
+- Image OCR fallback.
+- Structure reconstruction and richer normalization.
+- Verification UI for extracted source content.
 
 ### Phase 5 — Optional Scheduling
-Spaced repetition is a separate layer. It will not be required for normal studying. FSRS can be introduced behind the scheduler boundary without changing the basic card/session model.
+Spaced repetition is a separate layer. It is not required for normal studying. A scheduler can be introduced behind the scheduler boundary without changing the basic card/session model.
+
+Current foundation:
+- Optional scheduling toggle.
+- Due-date selection.
+- Basic interval/ease scheduling.
 
 ### Phase 6 — Import/Export + Polish
-Native format, Anki-compatible import/export where practical, media handling, richer statistics, performance and accessibility refinement.
+Planned:
+- Native format backup/import.
+- Anki-compatible import/export where practical.
+- Media handling.
+- Richer statistics.
+- Performance and accessibility refinement.
 
 Backup/cloud sync remain later infrastructure rather than blockers for the core app.
 
