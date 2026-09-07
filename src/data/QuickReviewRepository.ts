@@ -102,7 +102,7 @@ export class LocalRepository implements QuickReviewRepository {
 
   async getSettings() {
     const raw = await AsyncStorage.getItem(SETTINGS_KEY);
-    return raw ? JSON.parse(raw) : { schedulingEnabled: false, defaultSessionSize: 30, theme: 'system', gesturesEnabled: true };
+    return raw ? JSON.parse(raw) : { schedulingEnabled: false, defaultSessionSize: 10, theme: 'system', gesturesEnabled: true };
   }
 
   async saveSettings(settings: AppSettings) { await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
