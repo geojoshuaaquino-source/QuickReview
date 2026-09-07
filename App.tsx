@@ -23,7 +23,7 @@ export default function App(){
  const legacySetDecks:React.Dispatch<React.SetStateAction<Deck[]>>=updater=>{const next=typeof updater==='function'?updater(decks):updater;Promise.all(next.map(deck=>repo.saveDeck(deck))).then(refresh).catch(()=>undefined)};
  if(!loaded)return <SafeAreaView style={s.safe}><View style={s.loading}><Text style={s.loadingMark}>Q</Text><Text style={s.loadingText}>QuickReview</Text></View></SafeAreaView>;
  let screen:React.ReactNode;
- if(tab==='Home')screen=<HomeScreen decks={decks} reviews={reviews} schedulingEnabled={settings.schedulingEnabled} onStudy={id=>{setSelectedId(id);setTab('Study')}} onDecks={()=>setTab('Decks')} onLibrary={()=>setTab('Library')};
+ if(tab==='Home')screen=<HomeScreen decks={decks} reviews={reviews} schedulingEnabled={settings.schedulingEnabled} onStudy={id=>{setSelectedId(id);setTab('Study')}} onDecks={()=>setTab('Decks')} onLibrary={()=>setTab('Library')}/>;
  else if(tab==='Decks')screen=<Decks decks={decks} setDecks={legacySetDecks} nav={nav}/>;
  else if(tab==='Study'&&selected)screen=<StudyScreen deck={selected} defaultSessionSize={settings.defaultSessionSize} onAdd={addCard} onStartSession={makeSession} onGrade={grade}/>;
  else if(tab==='Library')screen=<LibraryScreen decks={decks} onToggleSuspend={toggleSuspend} onDelete={deleteCard} onUpdate={updateCard}/>;
