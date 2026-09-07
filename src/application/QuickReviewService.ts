@@ -4,11 +4,18 @@ import { QuickReviewRepository } from '../data/QuickReviewRepository';
 const DAY_MS = 24 * 60 * 60 * 1000;
 const AGAIN_MS = 10 * 60 * 1000;
 
+type CardDetails = {
+ options?: string[];
+ correctOption?: number;
+ imageUri?: string;
+ examples?: string[];
+};
+
 export class QuickReviewService {
  constructor(private repo:QuickReviewRepository){}
  async listDecks(){return this.repo.getDecks()}
  async createDeck(name:string,subject:string,accent:string):Promise<Deck>{const t=now();const d:Deck={id:makeId('deck'),name:name.trim(),subject:subject.trim()||'Personal study',accent,createdAt:t,updatedAt:t,cards:[]};await this.repo.saveDeck(d);return d}
- async createCard(deckId:string,front:string,back:string,type:CardType='basic'):Promise<Card>{const t=now();const c:Card={id:makeId('card'),deckId,type,front:front.trim(),back:back.trim(),examples:[],tags:[],createdAt:t,updatedAt:t,suspended:false};await this.repo.saveCard(c);return c}
+ async createCard(deckId:string,front:string,back:string,type:CardType='basic',details:CardDetails={}):Promise<Card>{const t=now();const c:Card={id:makeId('card'),deckId,type,front:front.trim(),back:back.trim(),examples:details.examples??[],tags:[],createdAt:t,updatedAt:t,suspended:false,...(details.options?{options:details.options}:{}),...(details.correctOption!==undefined?{correctOption:details.correctOption}:{}),...(details.imageUri?{imageUri:details.imageUri}:{})};await this.repo.saveCard(c);return c}
  async startSession(deck:Deck,size:number,schedulingEnabled=false):Promise<StudySession>{
   const current=Date.now();
   const active=deck.cards.filter(c=>!c.suspended);
