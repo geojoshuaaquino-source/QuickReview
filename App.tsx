@@ -4,6 +4,7 @@ import { Deck, Card } from './src/domain/models';
 import { LocalRepository } from './src/data/QuickReviewRepository';
 import { useQuickReview } from './src/application/QuickReviewStore';
 import { Home, Decks, Settings } from './src/presentation/screens';
+import { HomeScreen } from './src/presentation/HomeScreen';
 import { StudyScreen } from './src/presentation/StudyScreen';
 import { LibraryScreen } from './src/presentation/LibraryScreen';
 import { theme as T } from './src/presentation/theme';
@@ -14,7 +15,7 @@ const repo = new LocalRepository();
 export default function App() {
   const [tab, setTab] = useState<Tab>('Home');
   const [selectedId, setSelectedId] = useState('biology');
-  const { decks, loaded, createCard, grade, makeSession, refresh, deleteCard, toggleSuspend } = useQuickReview(repo);
+  const { decks, reviews, loaded, createCard, grade, makeSession, refresh, deleteCard, toggleSuspend } = useQuickReview(repo);
   const selected = useMemo(() => decks.find(d => d.id === selectedId) || decks[0], [decks, selectedId]);
   const nav = { go: setTab, select: setSelectedId };
   const addCard = async (card: Card) => { await createCard(card.deckId, card.front, card.back, card.type, card.tags); };
@@ -25,7 +26,7 @@ export default function App() {
 
   if (!loaded) return <SafeAreaView style={s.safe}><View style={s.loading}><Text style={s.loadingMark}>Q</Text><Text style={s.loadingText}>QuickReview</Text></View></SafeAreaView>;
   const screen = tab === 'Home'
-    ? <Home decks={decks} nav={nav} />
+    ? <HomeScreen decks={decks} reviews={reviews} onStudy={id => { setSelectedId(id); setTab('Study'); }} onDecks={() => setTab('Decks')} onLibrary={() => setTab('Library')} />
     : tab === 'Decks'
       ? <Decks decks={decks} setDecks={legacySetDecks} nav={nav} />
       : tab === 'Study' && selected
