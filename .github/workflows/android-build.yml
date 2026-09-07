@@ -36,13 +36,30 @@ jobs:
       - name: Generate Android project
         run: npx expo prebuild --platform android --non-interactive --no-install
 
-      - name: Build debug APK
+      - name: Build release APK
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleRelease --no-daemon
 
-      - name: Upload APK
+      - name: Sign release APK for installation
+        working-directory: android
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=$(find app/build/outputs/apk/release -maxdepth 1 -name '*.apk' -print -quit)
+          test -n "$APK"
+          BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)
+          "$BUILD_TOOLS/zipalign" -f 4 "$APK" app/build/outputs/apk/release/quickreview-release-aligned.apk
+          "$BUILD_TOOLS/apksigner" sign \
+            --ks "$HOME/.android/debug.keystore" \
+            --ks-pass pass:android \
+            --ks-key-alias androiddebugkey \
+            --out app/build/outputs/apk/release/quickreview-release.apk \
+            app/build/outputs/apk/release/quickreview-release-aligned.apk
+          "$BUILD_TOOLS/apksigner" verify --verbose app/build/outputs/apk/release/quickreview-release.apk
+
+      - name: Upload installable APK
         uses: actions/upload-artifact@v4
         with:
-          name: quickreview-android-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: quickreview-android-release
+          path: android/app/build/outputs/apk/release/quickreview-release.apk
           if-no-files-found: error
