@@ -3,7 +3,7 @@ import { SafeAreaView, StatusBar, StyleSheet, Text, Pressable, View } from 'reac
 import { Deck, Card } from './src/domain/models';
 import { LocalRepository } from './src/data/QuickReviewRepository';
 import { useQuickReview } from './src/application/QuickReviewStore';
-import { Home, Decks, Settings } from './src/presentation/screens';
+import { Decks, Settings } from './src/presentation/screens';
 import { HomeScreen } from './src/presentation/HomeScreen';
 import { StudyScreen } from './src/presentation/StudyScreen';
 import { LibraryScreen } from './src/presentation/LibraryScreen';
@@ -15,7 +15,7 @@ const repo = new LocalRepository();
 export default function App() {
   const [tab, setTab] = useState<Tab>('Home');
   const [selectedId, setSelectedId] = useState('biology');
-  const { decks, reviews, loaded, createCard, grade, makeSession, refresh, deleteCard, toggleSuspend } = useQuickReview(repo);
+  const { decks, reviews, loaded, createCard, updateCard, grade, makeSession, refresh, deleteCard, toggleSuspend } = useQuickReview(repo);
   const selected = useMemo(() => decks.find(d => d.id === selectedId) || decks[0], [decks, selectedId]);
   const nav = { go: setTab, select: setSelectedId };
   const addCard = async (card: Card) => { await createCard(card.deckId, card.front, card.back, card.type, card.tags); };
@@ -32,7 +32,7 @@ export default function App() {
       : tab === 'Study' && selected
         ? <StudyScreen deck={selected} onAdd={addCard} onStartSession={makeSession} onGrade={grade} />
         : tab === 'Library'
-          ? <LibraryScreen decks={decks} onToggleSuspend={toggleSuspend} onDelete={deleteCard} />
+          ? <LibraryScreen decks={decks} onToggleSuspend={toggleSuspend} onDelete={deleteCard} onUpdate={updateCard} />
           : <Settings />;
 
   return <SafeAreaView style={s.safe}>
