@@ -1,13 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Card, CardType, Deck, Rating, StudySession, now } from '../domain/models';
+import { Card, CardType, Deck, Rating, ReviewRecord, StudySession, now } from '../domain/models';
 import { QuickReviewRepository } from '../data/QuickReviewRepository';
 import { QuickReviewService } from './QuickReviewService';
 
 export function useQuickReview(repo: QuickReviewRepository) {
   const service = useMemo(() => new QuickReviewService(repo), [repo]);
   const [decks, setDecks] = useState<Deck[]>([]);
+  const [reviews, setReviews] = useState<ReviewRecord[]>([]);
   const [loaded, setLoaded] = useState(false);
-  const refresh = useCallback(async () => { setDecks(await service.listDecks()); setLoaded(true); }, [service]);
+  const refresh = useCallback(async () => {
+    const [nextDecks, nextReviews] = await Promise.all([service.listDecks(), repo.getReviews()]);
+    setDecks(nextDecks); setReviews(nextReviews); setLoaded(true);
+  }, [repo, service]);
   useEffect(() => { refresh().catch(() => setLoaded(true)); }, [refresh]);
 
   const createDeck = useCallback(async (name: string, subject: string, accent: string) => {
@@ -26,11 +30,11 @@ export function useQuickReview(repo: QuickReviewRepository) {
   const updateCard = useCallback(async (card: Card) => { await repo.updateCard(card); await refresh(); }, [repo, refresh]);
   const deleteCard = useCallback(async (cardId: string) => { await repo.deleteCard(cardId); await refresh(); }, [repo, refresh]);
   const toggleSuspend = useCallback(async (cardId: string) => { await repo.toggleSuspend(cardId); await refresh(); }, [repo, refresh]);
-  const grade = useCallback(async (session: StudySession, cardId: string, rating: Rating, elapsedMs: number) => { await service.grade(session, cardId, rating, elapsedMs); }, [service]);
+  const grade = useCallback(async (session: StudySession, cardId: string, rating: Rating, elapsedMs: number) => { await service.grade(session, cardId, rating, elapsedMs); const next = await repo.getReviews(); setReviews(next); }, [repo, service]);
   const makeSession = useCallback(async (deck: Deck, size: number, mode: 'sequential' | 'random' = 'sequential') => {
     const source = mode === 'random' ? { ...deck, cards: [...deck.cards].sort(() => Math.random() - 0.5) } : deck;
     return service.startSession(source, size);
   }, [service]);
 
-  return { decks, loaded, refresh, createDeck, createCard, updateCard, deleteCard, toggleSuspend, grade, makeSession };
+  return { decks, reviews, loaded, refresh, createDeck, createCard, updateCard, deleteCard, toggleSuspend, grade, makeSession };
 }
