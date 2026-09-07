@@ -12,7 +12,13 @@ export class QuickReviewService {
  async startSession(deck:Deck,size:number,schedulingEnabled=false):Promise<StudySession>{
   const current=Date.now();
   const active=deck.cards.filter(c=>!c.suspended);
-  const source=schedulingEnabled ? active.filter(c=>!c.dueAt || new Date(c.dueAt).getTime()<=current) : active;
+  const source=schedulingEnabled
+   ? [...active].sort((a,b)=>{
+      const aDue=a.dueAt?new Date(a.dueAt).getTime():0;
+      const bDue=b.dueAt?new Date(b.dueAt).getTime():0;
+      return aDue-bDue;
+    }).filter(c=>!c.dueAt||new Date(c.dueAt).getTime()<=current)
+   : active;
   const ids=source.slice(0,size).map(c=>c.id);
   return{id:makeId('session'),deckId:deck.id,cardIds:ids,currentIndex:0,startedAt:now(),schedulingEnabled};
  }
