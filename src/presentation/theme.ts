@@ -1,2 +1,2 @@
-export const theme={colors:{bg:'#F4F6F8',surface:'#FFFFFF',ink:'#18212B',muted:'#66717D',faint:'#98A2AD',line:'#DCE2E7',accent:'#2563EB',accentSoft:'#E8F0FF',dark:'#172033',green:'#16805B',greenSoft:'#E6F5EF',redSoft:'#FBEAEA'},radius:{sm:7,md:10,lg:14,xl:18},space:{xs:4,sm:8,md:12,lg:16,xl:24,xxl:32}} as const;
+export const theme={colors:{bg:'#020B18',surface:'#06152A',surface2:'#0A1D35',ink:'#F4F8FF',muted:'#91A6BF',faint:'#5E7692',line:'#15304D',accent:'#1687FF',accentSoft:'#0B315A',green:'#27D7A0',greenSoft:'#0B3B38',red:'#FF5E78',redSoft:'#401B2A',purple:'#8B6CFF',purpleSoft:'#241C52',cyan:'#25D8FF',dark:'#03101F'},radius:{sm:8,md:12,lg:16,xl:20},space:{xs:4,sm:8,md:12,lg:16,xl:24,xxl:32}} as const;
 export type Theme=typeof theme;
