@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { SafeAreaView, StatusBar, StyleSheet, Text, Pressable, View } from 'react-native';
+import { StatusBar, StyleSheet, Text, Pressable, View } from 'react-native';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Deck, Card } from './src/domain/models';
 import { LocalRepository } from './src/data/QuickReviewRepository';
 import { useQuickReview } from './src/application/QuickReviewStore';
@@ -13,7 +14,10 @@ import { theme as T } from './src/presentation/theme';
 type Tab='Home'|'Decks'|'Study'|'Library'|'Settings';
 const repo=new LocalRepository();
 
-export default function App(){
+export default function App(){return <SafeAreaProvider><AppContent/></SafeAreaProvider>}
+
+function AppContent(){
+ const insets=useSafeAreaInsets();
  const [tab,setTab]=useState<Tab>('Home');
  const [selectedId,setSelectedId]=useState('biology');
  const {decks,reviews,settings,loaded,createCard,updateCard,grade,makeSession,refresh,deleteCard,toggleSuspend,saveSettings,importCards,createDeckAndImport}=useQuickReview(repo);
@@ -21,13 +25,13 @@ export default function App(){
  const nav={go:setTab,select:setSelectedId};
  const addCard=async(card:Card)=>{await createCard(card.deckId,card.front,card.back,card.type,card.tags)};
  const legacySetDecks:React.Dispatch<React.SetStateAction<Deck[]>>=updater=>{const next=typeof updater==='function'?updater(decks):updater;Promise.all(next.map(deck=>repo.saveDeck(deck))).then(refresh).catch(()=>undefined)};
- if(!loaded)return <SafeAreaView style={s.safe}><View style={s.loading}><Text style={s.loadingMark}>Q</Text><Text style={s.loadingText}>QuickReview</Text></View></SafeAreaView>;
+ if(!loaded)return <View style={s.safe}><View style={[s.loading,{paddingTop:insets.top,paddingBottom:insets.bottom,paddingLeft:insets.left,paddingRight:insets.right}]}><Text style={s.loadingMark}>Q</Text><Text style={s.loadingText}>QuickReview</Text></View></View>;
  let screen:React.ReactNode;
  if(tab==='Home')screen=<HomeScreen decks={decks} reviews={reviews} schedulingEnabled={settings.schedulingEnabled} onStudy={id=>{setSelectedId(id);setTab('Study')}} onDecks={()=>setTab('Decks')} onLibrary={()=>setTab('Library')}/>;
  else if(tab==='Decks')screen=<Decks decks={decks} setDecks={legacySetDecks} nav={nav}/>;
  else if(tab==='Study'&&selected)screen=<StudyScreen deck={selected} defaultSessionSize={settings.defaultSessionSize} onAdd={addCard} onStartSession={makeSession} onGrade={grade}/>;
  else if(tab==='Library')screen=<LibraryScreen decks={decks} onToggleSuspend={toggleSuspend} onDelete={deleteCard} onUpdate={updateCard} onImportCards={importCards} onCreateDeckAndImport={createDeckAndImport}/>;
  else screen=<SettingsScreen settings={settings} onChange={saveSettings}/>;
- return <SafeAreaView style={s.safe}><StatusBar barStyle="dark-content" backgroundColor={T.colors.bg}/><View style={s.app}>{screen}</View><View style={s.nav}>{(['Home','Decks','Study','Library','Settings'] as Tab[]).map(x=>{const active=x===tab;return <Pressable key={x} onPress={()=>setTab(x)} accessibilityRole="tab" accessibilityState={{selected:active}} style={s.navItem}><View style={[s.navIcon,active&&s.navIconActive]}><Text style={[s.navGlyph,active&&s.navActive]}>{({Home:'⌂',Decks:'▤',Study:'◆',Library:'□',Settings:'⚙'} as Record<Tab,string>)[x]}</Text></View><Text style={[s.navLabel,active&&s.navActive]}>{x}</Text></Pressable>})}</View></SafeAreaView>;
+ return <View style={s.safe}><StatusBar barStyle="dark-content" backgroundColor={T.colors.bg}/><View style={[s.app,{paddingTop:insets.top,paddingLeft:insets.left,paddingRight:insets.right}]}>{screen}</View><View style={[s.nav,{height:76+insets.bottom,paddingBottom:insets.bottom,paddingLeft:insets.left,paddingRight:insets.right}]}>{(['Home','Decks','Study','Library','Settings'] as Tab[]).map(x=>{const active=x===tab;return <Pressable key={x} onPress={()=>setTab(x)} accessibilityRole="tab" accessibilityState={{selected:active}} style={s.navItem}><View style={[s.navIcon,active&&s.navIconActive]}><Text style={[s.navGlyph,active&&s.navActive]}>{({Home:'⌂',Decks:'▤',Study:'◆',Library:'□',Settings:'⚙'} as Record<Tab,string>)[x]}</Text></View><Text style={[s.navLabel,active&&s.navActive]}>{x}</Text></Pressable>})}</View></View>;
 }
-const s=StyleSheet.create({safe:{flex:1,backgroundColor:T.colors.bg},app:{flex:1},loading:{flex:1,alignItems:'center',justifyContent:'center'},loadingMark:{fontSize:42,fontWeight:'800',color:T.colors.accent},loadingText:{fontSize:12,color:T.colors.muted,marginTop:8},nav:{height:76,borderTopWidth:1,borderTopColor:T.colors.line,backgroundColor:'#FFF',flexDirection:'row',paddingTop:7},navItem:{flex:1,alignItems:'center'},navIcon:{width:42,height:30,borderRadius:12,alignItems:'center',justifyContent:'center'},navIconActive:{backgroundColor:T.colors.accentSoft},navGlyph:{fontSize:17,color:T.colors.muted},navLabel:{fontSize:9,fontWeight:'700',color:T.colors.muted,marginTop:3},navActive:{color:T.colors.accent,fontWeight:'800'}});
+const s=StyleSheet.create({safe:{flex:1,backgroundColor:T.colors.bg},app:{flex:1},loading:{flex:1,alignItems:'center',justifyContent:'center'},loadingMark:{fontSize:42,fontWeight:'800',color:T.colors.accent},loadingText:{fontSize:12,color:T.colors.muted,marginTop:8},nav:{borderTopWidth:1,borderTopColor:T.colors.line,backgroundColor:T.colors.surface,flexDirection:'row',paddingTop:7},navItem:{flex:1,alignItems:'center'},navIcon:{width:42,height:30,borderRadius:9,alignItems:'center',justifyContent:'center'},navIconActive:{backgroundColor:T.colors.accentSoft},navGlyph:{fontSize:17,color:T.colors.muted},navLabel:{fontSize:9,fontWeight:'700',color:T.colors.muted,marginTop:3},navActive:{color:T.colors.accent,fontWeight:'800'}});
