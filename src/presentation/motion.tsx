@@ -1,7 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Pressable, PressableProps, ViewStyle } from 'react-native';
+import { Animated, Pressable, PressableProps, StyleProp, ViewStyle } from 'react-native';
 
-export function FadeIn({ children, delay = 0, style }: { children: React.ReactNode; delay?: number; style?: ViewStyle | ViewStyle[] }) {
+type ScalePressProps = Omit<PressableProps, 'children' | 'style'> & {
+  children?: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+};
+
+export function FadeIn({ children, delay = 0, style }: { children: React.ReactNode; delay?: number; style?: StyleProp<ViewStyle> }) {
   const opacity = useRef(new Animated.Value(0)).current;
   const translate = useRef(new Animated.Value(8)).current;
   useEffect(() => {
@@ -13,7 +18,7 @@ export function FadeIn({ children, delay = 0, style }: { children: React.ReactNo
   return <Animated.View style={[style, { opacity, transform: [{ translateY: translate }] }]}>{children}</Animated.View>;
 }
 
-export function ScalePress({ children, style, ...props }: PressableProps) {
+export function ScalePress({ children, style, ...props }: ScalePressProps) {
   const scale = useRef(new Animated.Value(1)).current;
   const animate = (toValue: number) => Animated.spring(scale, { toValue, useNativeDriver: true, speed: 24, bounciness: 5 }).start();
   return <Pressable {...props} onPressIn={e => { animate(.97); props.onPressIn?.(e); }} onPressOut={e => { animate(1); props.onPressOut?.(e); }}>
