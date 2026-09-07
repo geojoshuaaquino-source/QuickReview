@@ -9,14 +9,16 @@ type Props = {
   decks: Deck[];
   onToggleSuspend: (cardId: string) => Promise<void>;
   onDelete: (cardId: string) => Promise<void>;
+  onUpdate: (card: Card) => Promise<void>;
 };
 
 type Filter = 'all' | 'active' | 'suspended';
 
-export function LibraryScreen({ decks, onToggleSuspend, onDelete }: Props) {
+export function LibraryScreen({ decks, onToggleSuspend, onDelete, onUpdate }: Props) {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
   const [selected, setSelected] = useState<Card | null>(null);
+  const [editing, setEditing] = useState(false);
   const cards = useMemo(() => decks.flatMap(deck => deck.cards.map(card => ({ card, deck }))), [decks]);
   const filtered = useMemo(() => cards.filter(({ card, deck }) => {
     const haystack = `${card.front} ${card.back} ${card.tags.join(' ')} ${deck.name}`.toLowerCase();
@@ -24,6 +26,8 @@ export function LibraryScreen({ decks, onToggleSuspend, onDelete }: Props) {
     const matchesFilter = filter === 'all' || (filter === 'active' ? !card.suspended : card.suspended);
     return matchesQuery && matchesFilter;
   }), [cards, filter, query]);
+
+  const closeDetails = () => { setEditing(false); setSelected(null); };
 
   return <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
     <Header title="Library" subtitle="Search, inspect and manage every card." />
@@ -43,19 +47,41 @@ export function LibraryScreen({ decks, onToggleSuspend, onDelete }: Props) {
 
     {filtered.length === 0 ? <View style={s.empty}><Text style={s.emptyTitle}>Nothing here yet</Text><Text style={s.emptyText}>Try another search or add cards from a study deck.</Text></View> : filtered.map(({ card, deck }, index) => <FadeIn key={card.id} delay={Math.min(index * 18, 180)}><ScalePress onPress={() => setSelected(card)} style={s.cardRow}><View style={[s.cardMark, { backgroundColor: deck.accent }]} /><View style={s.cardCopy}><Text style={s.deckLabel}>{deck.name.toUpperCase()}</Text><Text style={s.front} numberOfLines={2}>{card.front}</Text><Text style={s.back} numberOfLines={1}>{card.back}</Text>{card.tags.length > 0 && <Text style={s.tags}>#{card.tags.slice(0, 3).join('  #')}</Text>}</View><Text style={s.chevron}>›</Text></ScalePress></FadeIn>)}
 
-    <CardActions card={selected} deck={decks.find(d => d.id === selected?.deckId)} onClose={() => setSelected(null)} onToggleSuspend={onToggleSuspend} onDelete={onDelete} />
+    <CardActions card={selected} deck={decks.find(d => d.id === selected?.deckId)} editing={editing} onClose={closeDetails} onEdit={() => setEditing(true)} onToggleSuspend={onToggleSuspend} onDelete={onDelete} onUpdate={async updated => { await onUpdate(updated); setSelected(updated); setEditing(false); }} />
   </ScrollView>;
 }
 
-function CardActions({ card, deck, onClose, onToggleSuspend, onDelete }: { card: Card | null; deck?: Deck; onClose: () => void; onToggleSuspend: (id: string) => Promise<void>; onDelete: (id: string) => Promise<void> }) {
+function CardActions({ card, deck, editing, onClose, onEdit, onToggleSuspend, onDelete, onUpdate }: { card: Card | null; deck?: Deck; editing: boolean; onClose: () => void; onEdit: () => void; onToggleSuspend: (id: string) => Promise<void>; onDelete: (id: string) => Promise<void>; onUpdate: (card: Card) => Promise<void> }) {
   if (!card) return null;
+  if (editing) return <EditCardModal card={card} visible onClose={onClose} onSave={onUpdate} />;
   return <Modal visible transparent animationType="slide" onRequestClose={onClose}>
     <View style={s.backdrop}><View style={s.sheet}><View style={s.handle}/><View style={s.modalHead}><View><Text style={s.modalEyebrow}>{deck?.name?.toUpperCase() || 'CARD'}</Text><Text style={s.modalTitle}>Card details</Text></View><Pressable onPress={onClose}><Text style={s.close}>×</Text></Pressable></View>
       <Text style={s.detailLabel}>FRONT</Text><Text style={s.detail}>{card.front}</Text>
       <Text style={s.detailLabel}>BACK</Text><Text style={s.detail}>{card.back}</Text>
       {card.tags.length > 0 && <Text style={s.detailTags}>#{card.tags.join('  #')}</Text>}
+      <Button label="Edit card" onPress={onEdit} />
       <Button label={card.suspended ? 'Unsuspend card' : 'Suspend card'} secondary onPress={async () => { await onToggleSuspend(card.id); onClose(); }} />
       <Pressable style={s.deleteButton} onPress={async () => { await onDelete(card.id); onClose(); }}><Text style={s.deleteText}>Delete card</Text></Pressable>
+    </View></View>
+  </Modal>;
+}
+
+function EditCardModal({ card, visible, onClose, onSave }: { card: Card; visible: boolean; onClose: () => void; onSave: (card: Card) => Promise<void> }) {
+  const [front, setFront] = useState(card.front);
+  const [back, setBack] = useState(card.back);
+  const [tags, setTags] = useState(card.tags.join(', '));
+  const save = async () => {
+    const nextFront = front.trim();
+    const nextBack = back.trim();
+    if (!nextFront || !nextBack) return;
+    await onSave({ ...card, front: nextFront, back: nextBack, tags: tags.split(',').map(x => x.trim()).filter(Boolean), updatedAt: new Date().toISOString() });
+  };
+  return <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <View style={s.backdrop}><View style={s.sheet}><View style={s.handle}/><View style={s.modalHead}><Text style={s.modalTitle}>Edit card</Text><Pressable onPress={onClose}><Text style={s.close}>×</Text></Pressable></View>
+      <Text style={s.fieldLabel}>FRONT</Text><TextInput value={front} onChangeText={setFront} multiline style={s.input} placeholder="Question, term or prompt" placeholderTextColor={T.colors.faint}/>
+      <Text style={s.fieldLabel}>BACK</Text><TextInput value={back} onChangeText={setBack} multiline style={s.input} placeholder="Answer or explanation" placeholderTextColor={T.colors.faint}/>
+      <Text style={s.fieldLabel}>TAGS</Text><TextInput value={tags} onChangeText={setTags} style={s.input} placeholder="Optional · biology, exam-1" placeholderTextColor={T.colors.faint}/>
+      <Button label="Save changes" onPress={save}/><Pressable style={s.cancel} onPress={onClose}><Text style={s.cancelText}>Cancel</Text></Pressable>
     </View></View>
   </Modal>;
 }
@@ -100,5 +126,9 @@ const s = StyleSheet.create({
   detail:{fontSize:14,lineHeight:21,color:T.colors.ink},
   detailTags:{fontSize:10,fontWeight:'800',color:T.colors.accent,marginTop:12,marginBottom:2},
   deleteButton:{height:48,alignItems:'center',justifyContent:'center',marginTop:8},
-  deleteText:{fontSize:12,fontWeight:'800',color:'#B04A43'}
+  deleteText:{fontSize:12,fontWeight:'800',color:'#B04A43'},
+  fieldLabel:{fontSize:9,fontWeight:'900',letterSpacing:1.3,color:T.colors.faint,marginTop:8,marginBottom:6},
+  input:{minHeight:48,borderWidth:1,borderColor:T.colors.line,borderRadius:14,backgroundColor:T.colors.surface,padding:13,color:T.colors.ink,marginBottom:7},
+  cancel:{alignItems:'center',padding:12},
+  cancelText:{fontWeight:'800',color:T.colors.muted}
 });
