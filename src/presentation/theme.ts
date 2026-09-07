@@ -1,2 +1,24 @@
-export const theme={colors:{bg:'#020B18',surface:'#06152A',surface2:'#0A1D35',ink:'#F4F8FF',muted:'#91A6BF',faint:'#5E7692',line:'#15304D',accent:'#1687FF',accentSoft:'#0B315A',green:'#27D7A0',greenSoft:'#0B3B38',red:'#FF5E78',redSoft:'#401B2A',purple:'#8B6CFF',purpleSoft:'#241C52',cyan:'#25D8FF',dark:'#03101F'},radius:{sm:8,md:12,lg:16,xl:20},space:{xs:4,sm:8,md:12,lg:16,xl:24,xxl:32}} as const;
+export const theme={
+  colors:{
+    bg:'#F5F1E8',
+    surface:'#FFFCF6',
+    surface2:'#EEE9DE',
+    ink:'#171717',
+    muted:'#6D6A63',
+    faint:'#9B968C',
+    line:'#DDD7CA',
+    accent:'#E05A3F',
+    accentSoft:'#F8E2DB',
+    green:'#2D8667',
+    greenSoft:'#DDEEE7',
+    red:'#C94B4B',
+    redSoft:'#F5DFDF',
+    purple:'#685BC7',
+    purpleSoft:'#E8E5F7',
+    cyan:'#267D87',
+    dark:'#1B1C1A'
+  },
+  radius:{sm:10,md:14,lg:20,xl:28},
+  space:{xs:4,sm:8,md:12,lg:16,xl:24,xxl:32}
+} as const;
 export type Theme=typeof theme;
