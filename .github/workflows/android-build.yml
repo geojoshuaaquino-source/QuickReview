@@ -40,22 +40,36 @@ jobs:
         working-directory: android
         run: ./gradlew assembleRelease --no-daemon
 
-      - name: Sign release APK for installation
+      - name: Sign release APK with CI-only release key
         working-directory: android
         shell: bash
         run: |
           set -euo pipefail
           APK=$(find app/build/outputs/apk/release -maxdepth 1 -name '*.apk' -print -quit)
           test -n "$APK"
+          KEYSTORE="$RUNNER_TEMP/quickreview-release.jks"
+          KEY_PASSWORD=$(openssl rand -hex 24)
+          keytool -genkeypair \
+            -keystore "$KEYSTORE" \
+            -storepass "$KEY_PASSWORD" \
+            -keypass "$KEY_PASSWORD" \
+            -alias quickreview \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 1 \
+            -dname "CN=QuickReview CI,O=QuickReview,C=PH" \
+            -noprompt
           BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)
-          "$BUILD_TOOLS/zipalign" -f 4 "$APK" app/build/outputs/apk/release/quickreview-release-aligned.apk
+          "$BUILD_TOOLS/zipalign" -f 4 "$APK" "$RUNNER_TEMP/quickreview-release-aligned.apk"
           "$BUILD_TOOLS/apksigner" sign \
-            --ks "$HOME/.android/debug.keystore" \
-            --ks-pass pass:android \
-            --ks-key-alias androiddebugkey \
+            --ks "$KEYSTORE" \
+            --ks-pass "pass:$KEY_PASSWORD" \
+            --key-pass "pass:$KEY_PASSWORD" \
+            --ks-key-alias quickreview \
             --out app/build/outputs/apk/release/quickreview-release.apk \
-            app/build/outputs/apk/release/quickreview-release-aligned.apk
+            "$RUNNER_TEMP/quickreview-release-aligned.apk"
           "$BUILD_TOOLS/apksigner" verify --verbose app/build/outputs/apk/release/quickreview-release.apk
+          rm -f "$KEYSTORE" "$RUNNER_TEMP/quickreview-release-aligned.apk"
 
       - name: Upload installable APK
         uses: actions/upload-artifact@v4
