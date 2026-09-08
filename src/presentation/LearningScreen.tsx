@@ -1,130 +1,19 @@
-import React, { useMemo, useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Card, CardType, Deck } from '../domain/models';
-import { Button } from './components';
-import { theme as T } from './theme';
+import React,{useMemo,useState} from 'react';
+import {Image,Pressable,StyleSheet,Text,View} from 'react-native';
+import {Card,CardType,Deck} from '../domain/models';
+import {Button} from './components';
+import {theme as T} from './theme';
+import {FadeIn} from './motion';
 
-const label: Record<CardType, string> = {
-  basic: 'Basic',
-  reversed: 'Reversed',
-  cloze: 'Cloze',
-  multipleChoice: 'Multiple choice',
-  trueFalse: 'True / False',
-  typedAnswer: 'Typed answer',
-  image: 'Image',
-  imageOcclusion: 'Image occlusion',
-};
+const labels:Record<CardType,string>={basic:'Basic',reversed:'Reversed',cloze:'Cloze',multipleChoice:'Multiple choice',trueFalse:'True / False',typedAnswer:'Typed answer',image:'Image',imageOcclusion:'Image occlusion'};
+const clozeText=(text:string)=>text.replace(/\{\{\s*([^{}]+?)\s*\}\}/g,'$1');
 
-function clozeText(text: string) {
-  return text.replace(/\{\{\s*([^{}]+?)\s*\}\}/g, '$1');
+type Props={deck:Deck;onPractice:()=>void};
+export function LearningScreen({deck,onPractice}:Props){
+ const cards=useMemo(()=>deck.cards.filter(c=>!c.suspended),[deck]);const [index,setIndex]=useState(0);const [revealed,setRevealed]=useState(false);const current=cards[index];
+ if(!current)return <View style={s.empty}><Text style={s.kicker}>LEARN</Text><Text style={s.title}>{deck.name}</Text><Text style={s.emptyText}>Add cards to this deck to build a lesson.</Text><Button label="Go to practice" secondary onPress={onPractice}/></View>;
+ const prompt=current.type==='reversed'?current.back:current.front;const answer=current.type==='reversed'?current.front:current.back;
+ const next=()=>{setIndex(v=>Math.min(cards.length-1,v+1));setRevealed(false)};const previous=()=>{setIndex(v=>Math.max(0,v-1));setRevealed(false)};
+ return <View style={s.root}><View style={s.header}><View><Text style={[s.deck,{color:deck.accent||T.colors.accentInk}]}>{deck.name.toUpperCase()}</Text><Text style={s.heading}>Learn the material</Text></View><Pressable accessibilityRole="button" onPress={onPractice} style={s.practiceLink}><Text style={s.practiceText}>Practice</Text></Pressable></View><View style={s.progressRow}><Text style={s.progressText}>Lesson {index+1} of {cards.length}</Text><Text style={s.progressText}>{Math.round(((index+1)/cards.length)*100)}%</Text></View><View style={s.track}><View style={[s.fill,{width:`${((index+1)/cards.length)*100}%`,backgroundColor:T.colors.accent}]}/></View><FadeIn key={`${current.id}-${revealed?'answer':'prompt'}`}><View style={s.lesson}><Text style={s.type}>{revealed?'EXPLANATION':labels[current.type].toUpperCase()}</Text>{(current.type==='image'||current.type==='imageOcclusion')&&current.imageUri?<Image source={{uri:current.imageUri}} resizeMode="contain" style={s.image}/>:null}<Text style={s.prompt}>{current.type==='cloze'?clozeText(prompt):prompt}</Text>{!revealed?<><Text style={s.instruction}>Try to explain it before revealing the explanation.</Text><Button label="Reveal explanation" onPress={()=>setRevealed(true)}/></>:<><View style={s.answerRule}/><Text style={s.section}>WHAT IT MEANS</Text><Text style={s.answer}>{answer}</Text>{current.examples.length>0&&<><Text style={s.section}>EXAMPLES</Text>{current.examples.map((x,i)=><View key={`${x}-${i}`} style={s.example}><Text style={s.exampleIndex}>{String(i+1).padStart(2,'0')}</Text><Text style={s.exampleText}>{x}</Text></View>)}</>}</>}</View></FadeIn><View style={s.controls}><Pressable accessibilityRole="button" disabled={index===0} onPress={previous} style={[s.control,index===0&&s.disabled]}><Text style={s.controlText}>Previous</Text></Pressable><Pressable accessibilityRole="button" disabled={index===cards.length-1} onPress={next} style={[s.control,s.next,index===cards.length-1&&s.disabledNext]}><Text style={[s.controlText,s.nextText]}>Next</Text></Pressable></View></View>;
 }
-
-function LearningCard({ card }: { card: Card }) {
-  const prompt = card.type === 'reversed' ? card.back : card.front;
-  const meaning = card.type === 'reversed' ? card.front : card.back;
-  return (
-    <ScrollView contentContainerStyle={s.lesson} showsVerticalScrollIndicator={false}>
-      <Text style={s.type}>{label[card.type].toUpperCase()}</Text>
-      {(card.type === 'image' || card.type === 'imageOcclusion') && card.imageUri ? (
-        <Image source={{ uri: card.imageUri }} resizeMode="contain" style={s.image} />
-      ) : null}
-      <Text style={s.prompt}>{card.type === 'cloze' ? clozeText(prompt) : prompt}</Text>
-      <View style={s.divider} />
-      <Text style={s.section}>MEANING</Text>
-      <Text style={s.meaning}>{meaning}</Text>
-      {card.examples.length > 0 ? (
-        <>
-          <Text style={s.section}>EXAMPLES</Text>
-          {card.examples.map((example, index) => (
-            <View key={`${example}-${index}`} style={s.exampleRow}>
-              <Text style={s.exampleIndex}>{index + 1}</Text>
-              <Text style={s.example}>{example}</Text>
-            </View>
-          ))}
-        </>
-      ) : null}
-      {card.tags.length > 0 ? <Text style={s.tags}>{card.tags.map((tag) => `#${tag}`).join('  ')}</Text> : null}
-    </ScrollView>
-  );
-}
-
-type Props = { deck: Deck; onPractice: () => void };
-
-export function LearningScreen({ deck, onPractice }: Props) {
-  const cards = useMemo(() => deck.cards.filter((card) => !card.suspended), [deck]);
-  const [index, setIndex] = useState(0);
-  const current = cards[index];
-
-  if (!current) {
-    return (
-      <View style={s.empty}>
-        <Text style={s.kicker}>STUDY</Text>
-        <Text style={s.title}>{deck.name}</Text>
-        <Text style={s.emptyText}>There are no active lessons in this deck yet.</Text>
-        <Button label="Go to practice" secondary onPress={onPractice} />
-      </View>
-    );
-  }
-
-  return (
-    <View style={s.root}>
-      <View style={s.header}>
-        <View>
-          <Text style={[s.deck, { color: deck.accent }]}>{deck.name.toUpperCase()}</Text>
-          <Text style={s.heading}>Study lessons</Text>
-        </View>
-        <Pressable onPress={onPractice} accessibilityRole="button">
-          <Text style={s.practice}>Practice</Text>
-        </Pressable>
-      </View>
-      <View style={s.meta}>
-        <Text style={s.metaText}>Lesson {index + 1} of {cards.length}</Text>
-        <Text style={s.metaText}>Read at your pace</Text>
-      </View>
-      <View style={s.cardArea}>
-        <LearningCard card={current} />
-      </View>
-      <View style={s.controls}>
-        <Pressable disabled={index === 0} onPress={() => setIndex((value) => Math.max(0, value - 1))} style={[s.control, index === 0 && s.disabled]}>
-          <Text style={s.controlText}>Previous</Text>
-        </Pressable>
-        <Pressable disabled={index === cards.length - 1} onPress={() => setIndex((value) => Math.min(cards.length - 1, value + 1))} style={[s.control, s.next, index === cards.length - 1 && s.disabledNext]}>
-          <Text style={[s.controlText, s.nextText]}>Next lesson</Text>
-        </Pressable>
-      </View>
-    </View>
-  );
-}
-
-const s = StyleSheet.create({
-  root: { flex: 1, padding: 20 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  deck: { fontSize: 8, fontWeight: '900', letterSpacing: 1.4 },
-  heading: { fontSize: 25, fontWeight: '900', color: T.colors.ink, marginTop: 3 },
-  practice: { fontSize: 12, fontWeight: '900', color: T.colors.accent, padding: 8 },
-  meta: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12, marginBottom: 10 },
-  metaText: { fontSize: 10, fontWeight: '700', color: T.colors.muted },
-  cardArea: { flex: 1, borderWidth: 1, borderColor: T.colors.line, backgroundColor: T.colors.surface },
-  lesson: { padding: 20, paddingBottom: 28 },
-  type: { fontSize: 8, fontWeight: '900', letterSpacing: 1.3, color: T.colors.faint, marginBottom: 20 },
-  prompt: { fontSize: 25, lineHeight: 33, fontWeight: '900', color: T.colors.ink },
-  divider: { height: 1, backgroundColor: T.colors.line, marginVertical: 24 },
-  section: { fontSize: 8, fontWeight: '900', letterSpacing: 1.4, color: T.colors.faint, marginBottom: 8, marginTop: 4 },
-  meaning: { fontSize: 16, lineHeight: 25, color: T.colors.ink },
-  exampleRow: { flexDirection: 'row', marginTop: 10 },
-  exampleIndex: { width: 22, fontSize: 11, fontWeight: '900', color: T.colors.accent },
-  example: { flex: 1, fontSize: 13, lineHeight: 20, color: T.colors.muted },
-  tags: { fontSize: 10, fontWeight: '800', color: T.colors.accent, marginTop: 20 },
-  image: { width: '100%', height: 190, marginBottom: 20 },
-  controls: { flexDirection: 'row', gap: 10, marginTop: 12 },
-  control: { flex: 1, minHeight: 46, borderWidth: 1, borderColor: T.colors.line, alignItems: 'center', justifyContent: 'center' },
-  next: { backgroundColor: T.colors.accent, borderColor: T.colors.accent },
-  disabled: { opacity: 0.35 },
-  disabledNext: { opacity: 0.45 },
-  controlText: { fontSize: 11, fontWeight: '900', color: T.colors.ink },
-  nextText: { color: '#FFF' },
-  empty: { flex: 1, padding: 20, justifyContent: 'center' },
-  kicker: { fontSize: 9, fontWeight: '900', letterSpacing: 1.6, color: T.colors.accent },
-  title: { fontSize: 30, fontWeight: '900', color: T.colors.ink, marginTop: 5 },
-  emptyText: { fontSize: 13, lineHeight: 20, color: T.colors.muted, marginVertical: 10 },
-});
+const s=StyleSheet.create({root:{flex:1,padding:20},header:{flexDirection:'row',justifyContent:'space-between',alignItems:'flex-end'},deck:{fontSize:9,fontWeight:'900',letterSpacing:1.4},heading:{fontSize:25,fontWeight:'900',letterSpacing:-1.1,color:T.colors.ink,marginTop:3},practiceLink:{minHeight:44,justifyContent:'center',paddingHorizontal:6},practiceText:{fontSize:11,fontWeight:'900',color:T.colors.accentInk},progressRow:{flexDirection:'row',justifyContent:'space-between',marginTop:18},progressText:{fontSize:10,fontWeight:'800',color:T.colors.muted},track:{height:4,backgroundColor:T.colors.surface2,marginTop:8,marginBottom:14,overflow:'hidden'},fill:{height:4},lesson:{flex:1,backgroundColor:T.colors.surface,borderWidth:1,borderColor:T.colors.line,borderRadius:T.radius.xl,padding:20},type:{fontSize:8,fontWeight:'900',letterSpacing:1.4,color:T.colors.faint,marginBottom:22},image:{width:'100%',height:170,marginBottom:18},prompt:{fontSize:25,lineHeight:33,fontWeight:'900',color:T.colors.ink},instruction:{fontSize:11,lineHeight:18,color:T.colors.muted,marginTop:18,marginBottom:18,maxWidth:300},answerRule:{height:1,backgroundColor:T.colors.line,marginVertical:22},section:{fontSize:8,fontWeight:'900',letterSpacing:1.3,color:T.colors.faint,marginBottom:8},answer:{fontSize:16,lineHeight:25,color:T.colors.ink,marginBottom:18},example:{flexDirection:'row',marginTop:10},exampleIndex:{width:30,fontSize:9,fontWeight:'900,color:T.colors.accentInk},exampleText:{flex:1,fontSize:12,lineHeight:19,color:T.colors.muted},controls:{flexDirection:'row',gap:8,marginTop:10},control:{flex:1,minHeight:48,borderWidth:1,borderColor:T.colors.line,alignItems:'center',justifyContent:'center'},next:{backgroundColor:T.colors.ink,borderColor:T.colors.ink},controlText:{fontSize:11,fontWeight:'900',color:T.colors.ink},nextText:{color:T.colors.white},disabled:{opacity:.35},disabledNext:{opacity:.45},empty:{flex:1,padding:24,justifyContent:'center'},kicker:{fontSize:9,fontWeight:'900',letterSpacing:1.6,color:T.colors.accentInk},title:{fontSize:30,fontWeight:'900',color:T.colors.ink,marginTop:6},emptyText:{fontSize:12,lineHeight:19,color:T.colors.muted,marginVertical:12}});
