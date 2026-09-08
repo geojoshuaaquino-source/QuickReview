@@ -12,10 +12,10 @@ function decodeXml(value: string) {
 }
 
 export function parseTextCards(text: string): ImportedCard[] {
-  const lines = text.split(/\r?\n/).map(clean).filter(Boolean);
+  const lines = text.split(/\r?\n/).map(line => line.replace(/^\uFEFF/, '').trimEnd()).filter(line => line.trim());
   const cards: ImportedCard[] = [];
   for (const line of lines) {
-    if (line.startsWith('#')) continue;
+    if (line.trimStart().startsWith('#')) continue;
     const separator = line.includes('::') ? '::' : line.includes('\t') ? '\t' : null;
     if (!separator) continue;
     const index = line.indexOf(separator);
