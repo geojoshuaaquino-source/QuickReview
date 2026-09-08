@@ -15,6 +15,7 @@ export function parseTextCards(text: string): ImportedCard[] {
   const lines = text.split(/\r?\n/).map(clean).filter(Boolean);
   const cards: ImportedCard[] = [];
   for (const line of lines) {
+    if (line.startsWith('#')) continue;
     const separator = line.includes('::') ? '::' : line.includes('\t') ? '\t' : null;
     if (!separator) continue;
     const index = line.indexOf(separator);
