@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { BackHandler, Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card, Deck } from './src/domain/models';
@@ -31,11 +31,22 @@ function AppContent(){
  const legacySetDecks:React.Dispatch<React.SetStateAction<Deck[]>>=updater=>{const next=typeof updater==='function'?updater(decks):updater;Promise.all(next.map(deck=>repo.saveDeck(deck))).then(refresh).catch(()=>undefined)};
  const navigate=async(next:Tab)=>{if(next!==tab)await Haptics.selectionAsync().catch(()=>undefined);setTab(next);if(next==='Study')setStudyMode('learn')};
  const inActivePractice=tab==='Study'&&studyMode==='practice';
+
+ useEffect(()=>{
+  const sub=BackHandler.addEventListener('hardwareBackPress',()=>{
+   if(tab==='Home')return false;
+   setStudyMode('learn');
+   setTab('Home');
+   return true;
+  });
+  return ()=>sub.remove();
+ },[tab]);
+
  if(!loaded)return <View style={s.loading}><Text style={s.loadingMark}>Q</Text><Text style={s.loadingTitle}>QuickReview</Text><Text style={s.loadingText}>Preparing your study space…</Text></View>;
  let screen:React.ReactNode;
  if(tab==='Home')screen=<HomeScreen decks={decks} reviews={reviews} schedulingEnabled={settings.schedulingEnabled} onStudy={id=>{setSelectedId(id);setTab('Study');setStudyMode('learn')}} onDecks={()=>navigate('Decks')} onLibrary={()=>navigate('Library')}/>;
  else if(tab==='Decks')screen=<Decks decks={decks} setDecks={legacySetDecks} nav={nav}/>;
- else if(tab==='Study'&&selected)screen=studyMode==='learn'?<LearningScreen deck={selected} onPractice={()=>setStudyMode('practice')}/>:<StudyScreen deck={selected} defaultSessionSize={settings.defaultSessionSize} onAdd={addCard} onStartSession={makeSession} onGrade={grade} onExit={()=>setStudyMode('learn')}/>;
+ else if(tab==='Study'&&selected)screen=studyMode==='learn'?<LearningScreen deck={selected} onPractice={()=>setStudyMode('practice')} onHome={()=>navigate('Home')}/>:<StudyScreen deck={selected} defaultSessionSize={settings.defaultSessionSize} onAdd={addCard} onStartSession={makeSession} onGrade={grade} onExit={()=>setStudyMode('learn')}/>;
  else if(tab==='Library')screen=<LibraryScreen decks={decks} onToggleSuspend={toggleSuspend} onDelete={deleteCard} onUpdate={updateCard} onImportCards={importCards} onCreateDeckAndImport={createDeckAndImport}/>;
  else screen=<SettingsScreen settings={settings} onChange={saveSettings}/>;
  return <View style={s.safe}>
