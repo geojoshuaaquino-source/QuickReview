@@ -1,10 +1,14 @@
 export type CardType = 'basic' | 'reversed' | 'cloze' | 'multipleChoice' | 'trueFalse' | 'typedAnswer' | 'image' | 'imageOcclusion';
 export type Rating = 'again' | 'hard' | 'good' | 'easy';
 export type StudyDirection = 'termFirst' | 'meaningFirst' | 'mixed';
+export type LearningStage = 'new' | 'learning' | 'review' | 'suspended';
 export type Card = { id:string; deckId:string; type:CardType; front:string; back:string; examples:string[]; tags:string[]; createdAt:string; updatedAt:string; suspended:boolean; dueAt?:string; intervalDays?:number; ease?:number; options?:string[]; correctOption?:number; imageUri?:string };
 export type Deck = { id:string; name:string; subject:string; accent:string; createdAt:string; updatedAt:string; cards:Card[] };
 export type ReviewRecord = { id:string; cardId:string; sessionId:string; rating:Rating; elapsedMs:number; createdAt:string };
 export type StudySession = { id:string; deckId:string; cardIds:string[]; currentIndex:number; startedAt:string; completedAt?:string; schedulingEnabled:boolean; direction?:StudyDirection };
+export type DeckStudySummary = { deckId:string; active:number; newCards:number; learning:number; due:number; review:number };
+export type StudyQueue = { due:Card[]; newCards:Card[]; learning:Card[]; total:number; recommendedDeckId?:string };
+export type DashboardState = { queue:StudyQueue; deckSummaries:DeckStudySummary[]; reviewsToday:number; totalActive:number; lastReviewedCardId?:string };
 export type DocumentBlock = { id:string; type:'heading'|'paragraph'|'list'|'table'|'image'|'pageBreak'; text?:string; items?:string[]; page?:number };
 export type Document = { id:string; name:string; mimeType:string; sourceUri:string; blocks:DocumentBlock[]; extractedAt:string; verified:boolean };
 export type AppSettings = { schedulingEnabled:boolean; defaultSessionSize:number; theme:'system'|'light'|'dark'; gesturesEnabled:boolean; studyDirection:StudyDirection };
