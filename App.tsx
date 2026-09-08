@@ -13,6 +13,7 @@ import { SettingsScreen } from './src/presentation/SettingsScreen';
 import { theme as T } from './src/presentation/theme';
 
 type Tab='Home'|'Decks'|'Study'|'Library'|'Settings';
+const repo = new LocalRepository();
 
 export default function App(){return <SafeAreaProvider><AppContent/></SafeAreaProvider>}
 
