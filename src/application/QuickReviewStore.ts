@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AppSettings, Card, CardType, Deck, Rating, ReviewRecord, StudySession, now } from '../domain/models';
+import { AppSettings, Card, CardType, Deck, Rating, ReviewRecord, StudyDirection, StudySession, now } from '../domain/models';
 import { QuickReviewRepository } from '../data/QuickReviewRepository';
 import { QuickReviewService } from './QuickReviewService';
 
-const DEFAULT_SETTINGS:AppSettings={schedulingEnabled:false,defaultSessionSize:10,theme:'system',gesturesEnabled:true};
+const DEFAULT_SETTINGS:AppSettings={schedulingEnabled:false,defaultSessionSize:10,theme:'system',gesturesEnabled:true,studyDirection:'meaningFirst'};
 type CardDetails={options?:string[];correctOption?:number;imageUri?:string;examples?:string[]};
 type ImportItem={front:string;back:string;type?:CardType;tags?:string[];options?:string[];correctOption?:number;imageUri?:string;examples?:string[]};
 export function useQuickReview(repo:QuickReviewRepository){
@@ -18,6 +18,6 @@ export function useQuickReview(repo:QuickReviewRepository){
  const updateCard=useCallback(async(card:Card)=>{const deck=decks.find(d=>d.id===card.deckId);const f=card.front.trim().toLowerCase();const b=card.back.trim().toLowerCase();if(!f||!b)throw new Error('Front and back are required.');if(deck?.cards.some(x=>x.id!==card.id&&x.front.trim().toLowerCase()===f&&x.back.trim().toLowerCase()===b))throw new Error('A card with the same front and back already exists in this deck.');await repo.updateCard({...card,front:card.front.trim(),back:card.back.trim(),updatedAt:now()});await refresh()},[decks,repo,refresh]);
  const deleteCard=useCallback(async(cardId:string)=>{await repo.deleteCard(cardId);await refresh()},[repo,refresh]); const toggleSuspend=useCallback(async(cardId:string)=>{await repo.toggleSuspend(cardId);await refresh()},[repo,refresh]);
  const grade=useCallback(async(session:StudySession,cardId:string,rating:Rating,elapsedMs:number)=>{const record=await service.grade(session,cardId,rating,elapsedMs);if(session.schedulingEnabled){await refresh()}else{setReviews(current=>[...current,record])}},[refresh,service]);
- const makeSession=useCallback(async(deck:Deck,size:number,mode:'sequential'|'random'='sequential')=>{const source=mode==='random'?{...deck,cards:[...deck.cards].sort(()=>Math.random()-.5)}:deck;return service.startSession(source,size,settings.schedulingEnabled)},[service,settings.schedulingEnabled]);
+ const makeSession=useCallback(async(deck:Deck,size:number,mode:'sequential'|'random'='sequential',direction:StudyDirection=settings.studyDirection)=>{const source=mode==='random'?{...deck,cards:[...deck.cards].sort(()=>Math.random()-.5)}:deck;return service.startSession(source,size,settings.schedulingEnabled,direction)},[service,settings.schedulingEnabled,settings.studyDirection]);
  return {decks,reviews,settings,loaded,refresh,saveSettings,createDeck,createCard,importCards,createDeckAndImport,updateCard,deleteCard,toggleSuspend,grade,makeSession};
 }
