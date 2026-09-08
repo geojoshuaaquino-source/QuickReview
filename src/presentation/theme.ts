@@ -1,24 +1,6 @@
 export const theme={
-  colors:{
-    bg:'#F5F1E8',
-    surface:'#FFFCF6',
-    surface2:'#EEE9DE',
-    ink:'#171717',
-    muted:'#6D6A63',
-    faint:'#9B968C',
-    line:'#DDD7CA',
-    accent:'#E05A3F',
-    accentSoft:'#F8E2DB',
-    green:'#2D8667',
-    greenSoft:'#DDEEE7',
-    red:'#C94B4B',
-    redSoft:'#F5DFDF',
-    purple:'#685BC7',
-    purpleSoft:'#E8E5F7',
-    cyan:'#267D87',
-    dark:'#1B1C1A'
-  },
-  radius:{sm:10,md:14,lg:20,xl:28},
-  space:{xs:4,sm:8,md:12,lg:16,xl:24,xxl:32}
+  colors:{bg:'#F4F0E7',surface:'#FBF9F3',surface2:'#E9E3D8',ink:'#171614',muted:'#6E6A61',faint:'#9A9489',line:'#D8D1C4',accent:'#D9573F',accentSoft:'#F4DDD5',green:'#2E765D',greenSoft:'#DDEAE3',red:'#B84A43',redSoft:'#F1DEDB',purple:'#6258A7',purpleSoft:'#E6E2F1',cyan:'#28757A',dark:'#20201C',white:'#FFFDF8'},
+  radius:{sm:8,md:12,lg:16,xl:22,pill:999},
+  space:{xs:4,sm:8,md:12,lg:16,xl:24,xxl:32,huge:40}
 } as const;
 export type Theme=typeof theme;
